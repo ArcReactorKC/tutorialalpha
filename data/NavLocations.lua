@@ -18,7 +18,8 @@ local safeSpace = {
 	SlaveArea = { Y = -87, X = -626, Z = 12 },
 	JailEntry = { Y = -87, X = -626, Z = 12 },
 	JailHall1 = { Y = -87, X = -626, Z = 12 },
-	Jail1 = { Y = 195, X = -795, Z = 23, Heading =90 },
+	-- Canonical Jail1 recovery point used for post-combat stabilization.
+	Jail1 = { Y = 195, X = -795, Z = 23, Heading = 90 },
 	LocksmithHall = { Y = 598, X = -259, Z = -10 },
 	Jail2 = { Y = 598, X = -259, Z = -10 },
 	JailHall2 = { Y = 598, X = -259, Z = -10 },

@@ -73,7 +73,7 @@ State.workSet = {
 	---@type integer
 	MedTill = 100,
 	---@type integer
-	DpsLImiter = 0,
+	DpsLimiter = 0,
 	---@type integer
 	MyTargetID = 0,
 	---@type string
