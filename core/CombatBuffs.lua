@@ -7,8 +7,9 @@ require("inc.Global")
 local State     = require("core.State")
 local Utility   = require("core.Utility")
 local SpellMgmt = require("core.SpellMgmt")
-local Inventory = require("core.Inventory")
-local Tasks     = require("core.Tasks")
+local Inventory  = require("core.Inventory")
+local Tasks      = require("core.Tasks")
+local Constants  = require("data.Constants")
 
 local workSet = State.workSet
 
@@ -41,29 +42,16 @@ function CombatBuffs.checkSwiftness()
 		return
 	end
 
-	if (not TLO.InvSlot(19).Item.ID() and TLO.FindItemCount(67109)() == 1) then
-		Inventory.grabItem("67109", "left")
-		Delay(1000)
-		if (Cursor.ID()) then
-			mq.cmd.autoinventory()
-		end
-	elseif (not TLO.InvSlot(19).Item.ID() and TLO.FindItemCount(67123)() == 1) then
-		Inventory.grabItem("67123", "left")
-		Delay(1000)
-		if (Cursor.ID()) then
-			mq.cmd.autoinventory()
-		end
-	elseif (not TLO.InvSlot(19).Item.ID() and TLO.FindItemCount(67116)() == 1) then
-		Inventory.grabItem("67116", "left")
-		Delay(1000)
-		if (Cursor.ID()) then
-			mq.cmd.autoinventory()
-		end
-	elseif (not TLO.InvSlot(19).Item.ID() and TLO.FindItemCount(67102)() == 1) then
-		Inventory.grabItem("67102", "left")
-		Delay(1000)
-		if (Cursor.ID()) then
-			mq.cmd.autoinventory()
+	if (not TLO.InvSlot(19).Item.ID()) then
+		for _, itemId in ipairs(Constants.SWIFT_ITEM_IDS) do
+			if (TLO.FindItemCount(itemId)() == 1) then
+				Inventory.grabItem(tostring(itemId), "left")
+				Delay(1000)
+				if (Cursor.ID()) then
+					mq.cmd.autoinventory()
+				end
+				break
+			end
 		end
 	end
 
@@ -145,9 +133,9 @@ function CombatBuffs.checkCombatCasting()
 	FunctionEnter()
 
 	if (Me.Gem(1).ID() and Me.GemTimer(1)() == 0) then
-		if (Utility.isClassMatch({ "MAG", "ENC", "SHD" }) and Target.ID() > 0 and Target.Type() ~= "Object" and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLImiter) then
+		if (Utility.isClassMatch({ "MAG", "ENC", "SHD" }) and Target.ID() > 0 and Target.Type() ~= "Object" and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLimiter) then
 			SpellMgmt.castSpell(1)
-			workSet.DpsLImiter = os.time() + 10
+			workSet.DpsLimiter = os.time() + 10
 		elseif (Utility.isClassMatch({ "CLR", "RNG", "PAL", "BST", "SHM" }) and Me.PctHPs() < 30 and Me.PctMana() > 20) then
 			SpellMgmt.castThenRetarget(1)
 		elseif (Utility.isClassMatch({ "BRD" }) and not Me.Song("Chant of Battle").ID()) then
@@ -158,12 +146,12 @@ function CombatBuffs.checkCombatCasting()
 	end
 
 	if (Me.Gem(2).ID() and Me.GemTimer(2)() == 0) then
-		if (Utility.isClassMatch({ "WIZ" }) and Target.ID() > 0 and Target.Type() ~= "Object"  and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLImiter) then
+		if (Utility.isClassMatch({ "WIZ" }) and Target.ID() > 0 and Target.Type() ~= "Object"  and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLimiter) then
 			SpellMgmt.castSpell(2)
-			workSet.DpsLImiter = os.time() + 10
-		elseif (Utility.isClassMatch({ "NEC" }) and Target.ID() > 0 and Target.Type() ~= "Object"  and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLImiter) then
+			workSet.DpsLimiter = os.time() + 10
+		elseif (Utility.isClassMatch({ "NEC" }) and Target.ID() > 0 and Target.Type() ~= "Object"  and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLimiter) then
 			SpellMgmt.castSpell(2)
-			workSet.DpsLImiter = os.time() + 10
+			workSet.DpsLimiter = os.time() + 10
 		elseif (Utility.isClassMatch({ "DRU" }) and Me.PctHPs() < 30 and Me.PctMana() > 20) then
 			SpellMgmt.castThenRetarget(2)
 		end

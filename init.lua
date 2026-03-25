@@ -20,6 +20,8 @@ require("ImGui")
 local ICON = require("inc.icons")
 ---@type Scribing
 local Scribing = require("inc.Scribing")
+local NavLocations = require("data.NavLocations")
+local knownTargets = require("data.KnownTargets")
 
 Note.prefix = "tutorial"
 Note.outfile = string.format("Tutorial_%s.log", mq.TLO.Me.CleanName())
@@ -110,7 +112,7 @@ local workSet = {
 	---@type integer
 	MedTill = 100,
 	---@type integer
-	DpsLImiter = 0,
+	DpsLimiter = 0,
 	---@type integer
 	MyTargetID = 0,
 	---@type string
@@ -124,168 +126,10 @@ local workSet = {
 }
 
 ---@type table<string, Location>
-local navLocs = {
-	RatBat = {Y = -520, X = -378, Z = -38 },
-	SpiderRoom = { Y = -658, X = -367, Z = -58 },
-	QueenRoom = { Y = -1046, X = -482, Z = 1 },
-	PitTop = { Y = -463, X = -812, Z = 2 },
-}
+local navLocs = NavLocations.navLocs
 
 ---@type table<string, Location>
-local safeSpace = {
-	SpiderRoom = { Y = -955, X = -658, Z = -23 },
-	QueenRoom = { Y = -1163, X = -536, Z = -8 },
-	PitTop = { Y = -226, X = -834, Z = 2 },
-	PitSteps = { Y = -226, X = -834, Z = 2 },
-	SlaveHall1 = { Y = -226, X = -834, Z = 2 },
-	SlaveHall2 = { Y = -87, X = -626, Z = 12 },
-	SlaveArea = { Y = -87, X = -626, Z = 12 },
-	JailEntry = { Y = -87, X = -626, Z = 12 },
-	JailHall1 = { Y = -87, X = -626, Z = 12 },
-	Jail1 = { Y = -201, X = -805, Z = 24 },
-	LocksmithHall = { Y = 598, X = -259, Z = -10 },
-	Jail2 = { Y = 598, X = -259, Z = -10 },
-	JailHall2 = { Y = 598, X = -259, Z = -10 },
-	SlaveMaster = { Y = 598, X = -259, Z = -10 },
-}
-
----@type table<string, TargetInfo>
-local knownTargets = {
-	infiltrator = {
-		Name = "Infiltrator",
-		Type = "NPC",
-	},
-	rufus = {
-		Name = "Rufus",
-		Type = "NPC",
-		Priority = 1
-	},
-	caveRat = {
-		Name = "a_cave_rat",
-		Type = "NPC",
-	},
-	caveBat = {
-		Name = "a_cave_bat",
-		Type = "NPC",
-	},
-	verminNest = {
-		Name = "a_vermin_nest",
-		Type = "Object",
-	},
-	venomfang = {
-		Name = "Venomfang",
-		Type = "NPC",
-		Priority = 1
-	},
-	gloomSpider = {
-		Name = "a_gloom_spider",
-		Type = "NPC",
-	},
-	lurkerSpider = {
-		Name = "a_gloomfang_lurker",
-		Type = "NPC",
-	},
-	spiderCocoon = {
-		Name = "a_spider_cocoon_cluster",
-		Type = "NPC",
-	},
-	gugan = {
-		Name = "Spider_Tamer_Gugan",
-		Type = "NPC",
-	},
-	gloomfang = {
-		Name = "Queen_Gloomfang",
-		Type = "NPC",
-	},
-	barrel = {
-		Name = "a_kobold_barrel",
-		Type = "Object",
-	},
-	goblinSlave = {
-		Name = "a_goblin_slave",
-		Type = "NPC",
-	},
-	rookfynn = {
-		Name = "Rookfynn",
-		Type = "NPC",
-	},
-	grunt = {
-		Name = "a_Gloomingdeep_grunt",
-		Type = "NPC",
-	},
-	warrior = {
-		Name = "a_Gloomingdeep_warrior",
-		Type = "NPC",
-	},
-	slaveWarden = {
-		Name = "a_Gloomingdeep_slave_warden",
-		Type = "NPC",
-		Priority = 14
-	},
-	spiritweaver = {
-		Name = "a_Gloomingdeep_spiritweaver",
-		Type = "NPC",
-	},
-	brokenclaw = {
-		Name = "Brokenclaw",
-		Type = "NPC",
-		Priority = 13
-	},
-	captain = {
-		Name = "a_Gloomingdeep_captain",
-		Type = "NPC",
-	},
-	selandoor = {
-		Name = "Selandoor",
-		Type = "NPC",
-		Priority = 1
-	},
-	silver = {
-		Name = "Silver",
-		Type = "NPC",
-		Priority = 1
-	},
-	diseasedRat = {
-		Name = "a_diseased_rat",
-		Type = "NPC",
-	},
-	ratasaurus = {
-		Name = "Ratasaurus",
-		Type = "NPC",
-		Priority = 1
-	},
-	gnikan = {
-		Name = "Overlord_Gnikan",
-		Type = "NPC",
-	},
-	locksmith = {
-		Name = "The_Gloomingdeep_Locksmith",
-		Type = "NPC",
-	},
-	plaguebearer = {
-		Name = "a_Gloomingdeep_plaguebearer",
-		Type = "NPC",
-	},
-	guard = {
-		Name = "Guard_of_Gloomingdeep",
-		Type = "NPC",
-	},
-	ruga = {
-		Name = "Slavemaster_Ruga",
-		Type = "NPC",
-		Priority = 1
-	},
-	pox = {
-		Name = "Pox",
-		Type = "NPC",
-		Priority = 2
-	},
-	krenshin = {
-		Name = "Krenshin",
-		Type = "NPC",
-		Priority = 2
-	},
-}
+local safeSpace = NavLocations.safeSpace
 
 local lootedItems = {}
 local destroyList = {}
@@ -910,9 +754,9 @@ local function checkCombatCasting()
 	FunctionEnter()
 
 	if (Me.Gem(1).ID() and Me.GemTimer(1)() == 0) then
-		if (isClassMatch({ "MAG", "ENC", "SHD" }) and Target.ID() > 0 and Target.Type() ~= "Object" and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLImiter) then
+		if (isClassMatch({ "MAG", "ENC", "SHD" }) and Target.ID() > 0 and Target.Type() ~= "Object" and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLimiter) then
 			castSpell(1)
-			workSet.DpsLImiter = os.time() + 10
+			workSet.DpsLimiter = os.time() + 10
 		elseif (isClassMatch({ "CLR", "RNG", "PAL", "BST", "SHM" }) and Me.PctHPs() < 30 and Me.PctMana() > 20) then
 			castThenRetarget(1)
 		elseif (isClassMatch({ "BRD" }) and not Me.Song("Chant of Battle").ID()) then
@@ -923,12 +767,12 @@ local function checkCombatCasting()
 	end
 
 	if (Me.Gem(2).ID() and Me.GemTimer(2)() == 0) then
-		if (isClassMatch({ "WIZ" }) and Target.ID() > 0 and Target.Type() ~= "Object"  and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLImiter) then
+		if (isClassMatch({ "WIZ" }) and Target.ID() > 0 and Target.Type() ~= "Object"  and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLimiter) then
 			castSpell(2)
-			workSet.DpsLImiter = os.time() + 10
-		elseif (isClassMatch({ "NEC" }) and Target.ID() > 0 and Target.Type() ~= "Object"  and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLImiter) then
+			workSet.DpsLimiter = os.time() + 10
+		elseif (isClassMatch({ "NEC" }) and Target.ID() > 0 and Target.Type() ~= "Object"  and Target.Distance() < 30 and Me.PctMana() > 20 and os.time() > workSet.DpsLimiter) then
 			castSpell(2)
-			workSet.DpsLImiter = os.time() + 10
+			workSet.DpsLimiter = os.time() + 10
 		elseif (isClassMatch({ "DRU" }) and Me.PctHPs() < 30 and Me.PctMana() > 20) then
 			castThenRetarget(2)
 		end
